@@ -1,4 +1,4 @@
-package com.tlavu.educore.shared.config.environment;
+package com.tlavu.educore.shared.infrastructure.config.app;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.annotation.Nonnull;

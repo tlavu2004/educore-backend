@@ -1,4 +1,4 @@
-package com.tlavu.educore.shared.config;
+package com.tlavu.educore.shared.infrastructure.config.app;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

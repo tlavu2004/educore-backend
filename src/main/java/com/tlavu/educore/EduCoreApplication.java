@@ -1,6 +1,6 @@
 package com.tlavu.educore;
 
-import com.tlavu.educore.shared.config.environment.EnvironmentConfig;
+import com.tlavu.educore.shared.infrastructure.config.app.EnvironmentConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
