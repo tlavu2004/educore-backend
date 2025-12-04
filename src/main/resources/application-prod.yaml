@@ -14,7 +14,7 @@ server:
 
 logging:
   level:
-    com.awad.educore: WARN
+    com.tlavu.educore: WARN
     org.springframework.security: WARN
     org.springframework.web: ERROR
     org.hibernate.SQL: WARN
