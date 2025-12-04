@@ -10,8 +10,22 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+
+/**
+ * Loads environment variables from a .env file into the Spring application context.
+ * <p>
+ * This class implements {@link ApplicationContextInitializer} to ensure that environment variables
+ * from the .env file are loaded into the Spring {@link ConfigurableEnvironment} before the application
+ * context is fully initialized. This allows .env variables to be used in {@code @Value} annotations
+ * and in {@code application.yaml} placeholders.
+ * <p>
+ * {@code ApplicationContextInitializer} is used instead of a {@code @Configuration} class with
+ * {@code @PropertySource} because it runs earlier in the Spring lifecycle, ensuring that properties
+ * are available for resolution during context initialization.
+ */
 public class EnvironmentConfig implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(EnvironmentConfig.class);
@@ -31,6 +45,8 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                     )
             );
 
+            validateRequiredEnvVars(envMap);
+
             ConfigurableEnvironment environment = applicationContext.getEnvironment();
             environment.getPropertySources()
                     .addFirst(new MapPropertySource(
@@ -40,7 +56,31 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
 
             logger.info("Environment variables loaded from .env successfully!");
         } catch (Exception e) {
-            logger.warn("Warning: Could not load .env file. Using defaults from application.yaml");
+            logger.warn("Warning: Could not load .env file. Using defaults from application.yaml", e);
+        }
+    }
+
+    /**
+     * Ensures required environment variables exist before application startup.
+     */
+    private void validateRequiredEnvVars(Map<String, Object> envMap) {
+        List<String> required = List.of(
+                "DB_URL",
+                "DB_USERNAME",
+                "DB_PASSWORD",
+                "SERVER_PORT"
+        );
+
+        List<String> missing = required.stream()
+                .filter(key -> !envMap.containsKey(key))
+                .toList();
+
+        if (!missing.isEmpty()) {
+            throw new IllegalStateException(
+                    "Missing required environment variables: " +
+                    missing +
+                    ". Please define them in .env or real environment."
+            );
         }
     }
 }
