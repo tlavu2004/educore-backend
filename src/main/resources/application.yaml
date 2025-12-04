@@ -32,6 +32,10 @@ server:
     include-message: always
     include-binding-errors: always
 
+security:
+  bcrypt:
+    strength: 10
+
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
