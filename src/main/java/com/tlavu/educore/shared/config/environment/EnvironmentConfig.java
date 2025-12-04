@@ -2,6 +2,8 @@ package com.tlavu.educore.shared.config.environment;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -11,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EnvironmentConfig implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    private static final Logger logger = LoggerFactory.getLogger(EnvironmentConfig.class);
 
     @Override
     public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
@@ -34,9 +38,9 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                             envMap
                     ));
 
-            System.out.println("Environment variables loaded from .env successfully!");
+            logger.info("Environment variables loaded from .env successfully!");
         } catch (Exception e) {
-            System.err.println("Warning: Could not load .env file. Using defaults from application.yaml");
+            logger.warn("Warning: Could not load .env file. Using defaults from application.yaml");
         }
     }
 }
