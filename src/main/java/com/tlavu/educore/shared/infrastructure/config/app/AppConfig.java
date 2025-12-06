@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * Defines critical beans that affect security and serialization across the entire application:
  * <ul>
  *   <li><b>PasswordEncoder</b>: Uses BCrypt with a configurable strength (see {@link BcryptConfig}) to allow tuning of password hashing complexity for security and performance.</li>
- *   <li><b>ObjectMapper</b>: Configured to serialize Java 8 date/time types as ISO-8601 strings (not timestamps) for better interoperability and readability, and to ignore unknown properties during deserialization for robustness.</li>
+ *   <li><b>ObjectMapper</b>: Configured to serialize Java 8 date/time types as ISO-8601 strings (not timestamps) for better interoperability and readability.</li>
  * </ul>
  * <p>
  * These decisions are made to ensure secure password storage and consistent, human-readable date/time serialization throughout the application.
