@@ -36,7 +36,7 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
     public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
 
         Map<String, Object> envMap = new HashMap<>();
-        boolean dotenvFileExists = Files.exists(Paths.get(".env"));
+        boolean dotenvFileExists = false;
 
         try {
             Dotenv dotenv = Dotenv.configure()
@@ -53,6 +53,10 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                     )
             );
 
+            // Check if .env file exists after successful loading
+            // If the file existed (even if empty), Dotenv will load it successfully
+            dotenvFileExists = Files.exists(Paths.get(".env"));
+            
             if (dotenvFileExists) {
                 logger.info("Environment variables loaded from .env successfully!");
             } else {
@@ -60,7 +64,6 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
             }
         } catch (Exception e) {
             logger.debug("Could not load .env file. Environment variables may be sourced from system environment, application.yaml, or other configuration sources.", e);
-            dotenvFileExists = false;
         }
 
         ConfigurableEnvironment environment = applicationContext.getEnvironment();
