@@ -100,12 +100,15 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                 "DB_PASSWORD"
         );
 
+        logger.debug("Starting required env validation...");
+        logger.debug("Required keys: {}", required);
+
         // Log which variables are present in the .env file for debugging
         MapPropertySource dotenvSource = (MapPropertySource) environment
                 .getPropertySources()
                 .get("dotenvProperties");
 
-        if (dotenvSource != null && dotenvSource.getSource() != null && !dotenvSource.getSource().isEmpty()) {
+        if (dotenvSource != null && !dotenvSource.getSource().isEmpty()) {
             logger.debug("Variables in .env file: {}", dotenvSource.getSource().keySet());
         } else if (!dotenvFileExists) {
             logger.debug(".env file was not found; validating against all property sources (system environment, application.yaml, etc.)");
@@ -118,12 +121,14 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                     String value = environment.getProperty(key);
                     boolean isMissing = value == null || value.isBlank();
 
-                    logger.debug(
-                            "Checking {} in all property sources: {} (missing: {})",
-                            key,
-                            value != null ? "EXISTS" : "NULL",
-                            isMissing
-                    );
+                    if (!"DB_PASSWORD".equals(key)) {
+                        logger.debug(
+                                "Checking {} in all property sources: {} (missing: {})",
+                                key,
+                                value != null ? "EXISTS" : "NULL",
+                                isMissing
+                        );
+                    }
                     return isMissing;
                 })
                 .toList();
@@ -148,12 +153,12 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
         if (dotenvFileExists) {
             return String.format(
                     "Missing required environment variables: %s. Please ensure they are defined in .env file or system environment.",
-                    missing
+                    String.join(", ", missing)
             );
         } else {
             return String.format(
                     "Missing required environment variables: %s. .env file was not found. Please ensure these variables are defined in system environment or application.yaml.",
-                    missing
+                    String.join(", ", missing)
             );
         }
     }
