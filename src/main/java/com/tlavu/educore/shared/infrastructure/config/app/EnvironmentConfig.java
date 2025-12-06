@@ -139,6 +139,11 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
         }
 
         // Logic production / staging
+        String detailedMessage = String.format(
+                "Missing required environment variables: %s. Check your deployment configuration.",
+                String.join(", ", missing)
+        );
+        logger.error(detailedMessage);
         return "Missing required environment variables. Check your deployment configuration.";
     }
 }
