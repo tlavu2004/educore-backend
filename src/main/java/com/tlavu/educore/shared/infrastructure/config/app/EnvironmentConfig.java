@@ -36,7 +36,7 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
     public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
 
         Map<String, Object> envMap = new HashMap<>();
-        boolean dotenvFileLoaded = Files.exists(Paths.get(".env"));
+        boolean dotenvFileExists = Files.exists(Paths.get(".env"));
 
         try {
             Dotenv dotenv = Dotenv.configure()
@@ -53,14 +53,14 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                     )
             );
 
-            if (dotenvFileLoaded) {
+            if (dotenvFileExists) {
                 logger.info("Environment variables loaded from .env successfully!");
             } else {
                 logger.debug(".env file not found. Environment variables may be sourced from system environment, application.yaml, or other configuration sources.");
             }
         } catch (Exception e) {
             logger.debug("Could not load .env file. Environment variables may be sourced from system environment, application.yaml, or other configuration sources.", e);
-            dotenvFileLoaded = false;
+            dotenvFileExists = false;
         }
 
         ConfigurableEnvironment environment = applicationContext.getEnvironment();
@@ -78,7 +78,7 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
         );
 
         if (validate) {
-            validateRequiredEnvVars(environment, dotenvFileLoaded);
+            validateRequiredEnvVars(environment, dotenvFileExists);
         }
     }
 
@@ -86,9 +86,9 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
      * Ensures required environment variables exist before application startup.
      *
      * @param environment the Spring environment containing all property sources
-     * @param dotenvFileLoaded indicates whether the .env file was successfully loaded
+     * @param dotenvFileExists indicates whether the .env file exists on disk
      */
-    private void validateRequiredEnvVars(ConfigurableEnvironment environment, boolean dotenvFileLoaded) {
+    private void validateRequiredEnvVars(ConfigurableEnvironment environment, boolean dotenvFileExists) {
         List<String> required = List.of(
                 "DB_URL",
                 "DB_USERNAME",
@@ -100,10 +100,10 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                 .getPropertySources()
                 .get("dotenvProperties");
 
-        if (dotenvFileLoaded && dotenvSource != null) {
+        if (dotenvFileExists && dotenvSource != null) {
             logger.debug("Variables in .env file: {}", dotenvSource.getSource().keySet());
-        } else if (!dotenvFileLoaded) {
-            logger.debug(".env file was not loaded; validating against all property sources (system environment, application.yaml, etc.)");
+        } else if (!dotenvFileExists) {
+            logger.debug(".env file was not found; validating against all property sources (system environment, application.yaml, etc.)");
         } else {
             logger.debug("dotenvProperties source not found; proceeding to check all property sources.");
         }
@@ -124,8 +124,7 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                 .toList();
 
         if (!missing.isEmpty()) {
-            String errorMessage = buildErrorMessage(missing, dotenvFileLoaded);
-            
+            String errorMessage = buildErrorMessage(missing, dotenvFileExists);
             logger.error(errorMessage);
             throw new IllegalStateException(errorMessage);
         }
@@ -134,15 +133,19 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
     }
 
     /**
-     * Builds an appropriate error message based on whether the .env file was loaded.
+     * Builds an appropriate error message based on whether the .env file exists.
      */
-    private String buildErrorMessage(List<String> missing, boolean dotenvFileLoaded) {
-        if (dotenvFileLoaded) {
-            return "Missing required environment variables: " + missing + 
-                   ". Please ensure they are defined in .env file or system environment.";
+    private String buildErrorMessage(List<String> missing, boolean dotenvFileExists) {
+        if (dotenvFileExists) {
+            return String.format(
+                    "Missing required environment variables: %s. Please ensure they are defined in .env file or system environment.",
+                    missing
+            );
         } else {
-            return "Missing required environment variables: " + missing + 
-                   ". .env file was not found. Please ensure these variables are defined in system environment or application.yaml.";
+            return String.format(
+                    "Missing required environment variables: %s. .env file was not found. Please ensure these variables are defined in system environment or application.yaml.",
+                    missing
+            );
         }
     }
 }
