@@ -139,6 +139,10 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
 
     /**
      * Builds an appropriate error message based on whether the .env file exists.
+     *
+     * @param missing the list of missing environment variable names
+     * @param dotenvFileExists indicates whether the .env file exists on disk
+     * @return a formatted error message with guidance for the user
      */
     private String buildErrorMessage(List<String> missing, boolean dotenvFileExists) {
         if (dotenvFileExists) {
