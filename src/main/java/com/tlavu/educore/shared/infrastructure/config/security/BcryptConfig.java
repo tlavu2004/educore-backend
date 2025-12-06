@@ -15,7 +15,8 @@ import org.springframework.context.annotation.Configuration;
  * <br>
  * <b>Security implications:</b> Higher strength values increase the time required to hash and verify passwords,
  * improving resistance to brute-force attacks, but may impact application performance. The default value (10)
- * is a reasonable balance for most applications, but should be increased if security requirements permit.
+ * is a reasonable balance for most applications, but should be increased if security requirements demand it and
+ * performance impact is acceptable.
  */
 @Getter
 @Setter
