@@ -34,6 +34,7 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
     public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
 
         Map<String, Object> envMap = new HashMap<>();
+        boolean dotenvFileLoaded = false;
 
         try {
             Dotenv dotenv = Dotenv.configure()
@@ -50,7 +51,14 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                     )
             );
 
-            logger.info("Environment variables loaded from .env successfully!");
+            // Check if .env file was actually loaded (non-empty entries indicate file was present)
+            dotenvFileLoaded = !envMap.isEmpty();
+            
+            if (dotenvFileLoaded) {
+                logger.info("Environment variables loaded from .env successfully!");
+            } else {
+                logger.debug(".env file not found or is empty. Environment variables may be sourced from system environment, application.yaml, or other configuration sources.");
+            }
         } catch (Exception e) {
             logger.debug("Could not load .env file. Environment variables may be sourced from system environment, application.yaml, or other configuration sources.", e);
         }
@@ -70,14 +78,17 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
         );
 
         if (validate) {
-            validateRequiredEnvVars(environment);
+            validateRequiredEnvVars(environment, dotenvFileLoaded);
         }
     }
 
     /**
      * Ensures required environment variables exist before application startup.
+     *
+     * @param environment the Spring environment containing all property sources
+     * @param dotenvFileLoaded indicates whether the .env file was successfully loaded
      */
-    private void validateRequiredEnvVars(ConfigurableEnvironment environment) {
+    private void validateRequiredEnvVars(ConfigurableEnvironment environment, boolean dotenvFileLoaded) {
         List<String> required = List.of(
                 "DB_URL",
                 "DB_USERNAME",
@@ -89,8 +100,10 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                 .getPropertySources()
                 .get("dotenvProperties");
 
-        if (dotenvSource != null) {
+        if (dotenvFileLoaded && dotenvSource != null) {
             logger.debug("Variables in .env file: {}", dotenvSource.getSource().keySet());
+        } else if (!dotenvFileLoaded) {
+            logger.debug(".env file was not loaded; validating against all property sources (system environment, application.yaml, etc.)");
         } else {
             logger.debug("dotenvProperties source not found; proceeding to check all property sources.");
         }
@@ -111,10 +124,12 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                 .toList();
 
         if (!missing.isEmpty()) {
-            logger.error("Missing required environment variables: {}", missing);
-            throw new IllegalStateException(
-                    "Missing required environment variables: " + missing
-            );
+            String errorMessage = dotenvFileLoaded
+                    ? "Missing required environment variables: " + missing + ". Please ensure they are defined in .env file or system environment."
+                    : "Missing required environment variables: " + missing + ". .env file was not found. Please ensure these variables are defined in system environment or application.yaml.";
+            
+            logger.error(errorMessage);
+            throw new IllegalStateException(errorMessage);
         }
 
         logger.info("All required environment variables are present.");
