@@ -37,7 +37,10 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
 
         try {
             Dotenv dotenv = Dotenv.configure()
+                    .directory("./")
+                    .filename(".env")
                     .ignoreIfMissing()
+                    .ignoreIfMalformed()
                     .load();
 
             dotenv.entries().forEach(
@@ -49,7 +52,7 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
 
             logger.info("Environment variables loaded from .env successfully!");
         } catch (Exception e) {
-            logger.warn("Warning: Could not load .env file. Using defaults from application.yaml", e);
+            logger.debug("Could not load .env file. Environment variables may be sourced from system environment, application.yaml, or other configuration sources.", e);
         }
 
         ConfigurableEnvironment environment = applicationContext.getEnvironment();
@@ -81,35 +84,39 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                 "DB_PASSWORD"
         );
 
-        // Chỉ lấy từ dotenvProperties source
+        // Log which variables are present in the .env file for debugging
         MapPropertySource dotenvSource = (MapPropertySource) environment
                 .getPropertySources()
                 .get("dotenvProperties");
 
-        if (dotenvSource == null) {
-            logger.error("dotenvProperties source not found!");
-            throw new IllegalStateException("Failed to load .env file");
+        if (dotenvSource != null) {
+            logger.debug("Variables in .env file: {}", dotenvSource.getSource().keySet());
+        } else {
+            logger.debug("dotenvProperties source not found; proceeding to check all property sources.");
         }
-
-        logger.info("🔍 Variables in .env file: {}", dotenvSource.getSource().keySet());
 
         List<String> missing = required.stream()
                 .filter(key -> {
-                    Object value = dotenvSource.getSource().get(key);
-                    boolean isMissing = value == null || value.toString().isBlank();
-                    logger.info("Checking {} in .env: {} (missing: {})",
-                            key, value != null ? "EXISTS" : "NULL", isMissing);
+                    String value = environment.getProperty(key);
+                    boolean isMissing = value == null || value.isBlank();
+
+                    logger.debug(
+                            "Checking {} in all property sources: {} (missing: {})",
+                            key,
+                            value != null ? "EXISTS" : "NULL",
+                            isMissing
+                    );
                     return isMissing;
                 })
                 .toList();
 
         if (!missing.isEmpty()) {
-            logger.error("Missing required variables in .env file: {}", missing);
+            logger.error("Missing required environment variables: {}", missing);
             throw new IllegalStateException(
-                    "Missing required environment variables in .env file: " + missing
+                    "Missing required environment variables: " + missing
             );
         }
 
-        logger.info("All required environment variables are present in .env file.");
+        logger.info("All required environment variables are present.");
     }
 }
