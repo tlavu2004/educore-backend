@@ -128,22 +128,20 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
      */
     private String buildErrorMessage(List<String> missing, boolean dotenvFileExists, boolean isDevProfile) {
 
+        String joined = String.join(", ", missing);
+
         if (isDevProfile) {
+            String hint = dotenvFileExists
+                    ? "Please ensure they are defined in your .env file."
+                    : ".env file was not found. Please define them in system environment or application.yaml.";
+
             return String.format(
                     "Missing required environment variables: %s. %s",
-                    String.join(", ", missing),
-                    dotenvFileExists
-                            ? "Please ensure they are defined in your .env file."
-                            : ".env file was not found. Please define them in system environment or application.yaml."
+                    joined,
+                    hint
             );
         }
 
-        // Logic production / staging
-        String detailedMessage = String.format(
-                "Missing required environment variables: %s. Check your deployment configuration.",
-                String.join(", ", missing)
-        );
-        logger.error(detailedMessage);
         return "Missing required environment variables. Check your deployment configuration.";
     }
 }
