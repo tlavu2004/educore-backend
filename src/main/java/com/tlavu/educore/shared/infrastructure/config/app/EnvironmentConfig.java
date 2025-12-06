@@ -4,7 +4,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -33,12 +32,14 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
 
     @Override
     public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
+
+        Map<String, Object> envMap = new HashMap<>();
+
         try {
             Dotenv dotenv = Dotenv.configure()
                     .ignoreIfMissing()
                     .load();
 
-            Map<String, Object> envMap = new HashMap<>();
             dotenv.entries().forEach(
                     entry -> envMap.put(
                             entry.getKey(),
@@ -46,28 +47,27 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                     )
             );
 
-            ConfigurableEnvironment environment = applicationContext.getEnvironment();
-
-            environment.getPropertySources()
-                    .addFirst(new MapPropertySource(
-                            "dotenvProperties",
-                            envMap
-                    ));
-
-            boolean validate = Boolean.parseBoolean(
-                    environment.getProperty(
-                            "app.env.validate-required",
-                            "true"
-                    )
-            );
-
-            if (validate) {
-                validateRequiredEnvVars(environment);
-            }
-
             logger.info("Environment variables loaded from .env successfully!");
         } catch (Exception e) {
             logger.warn("Warning: Could not load .env file. Using defaults from application.yaml", e);
+        }
+
+        ConfigurableEnvironment environment = applicationContext.getEnvironment();
+        environment.getPropertySources()
+                .addFirst(new MapPropertySource(
+                        "dotenvProperties",
+                        envMap
+                ));
+
+        boolean validate = Boolean.parseBoolean(
+                environment.getProperty(
+                        "app.env.validate-required",
+                        "true"
+                )
+        );
+
+        if (validate) {
+            validateRequiredEnvVars(environment);
         }
     }
 
@@ -81,16 +81,35 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                 "DB_PASSWORD"
         );
 
+        // Chỉ lấy từ dotenvProperties source
+        MapPropertySource dotenvSource = (MapPropertySource) environment
+                .getPropertySources()
+                .get("dotenvProperties");
+
+        if (dotenvSource == null) {
+            logger.error("dotenvProperties source not found!");
+            throw new IllegalStateException("Failed to load .env file");
+        }
+
+        logger.info("🔍 Variables in .env file: {}", dotenvSource.getSource().keySet());
+
         List<String> missing = required.stream()
-                .filter(key -> environment.getProperty(key) == null)
+                .filter(key -> {
+                    Object value = dotenvSource.getSource().get(key);
+                    boolean isMissing = value == null || value.toString().isBlank();
+                    logger.info("Checking {} in .env: {} (missing: {})",
+                            key, value != null ? "EXISTS" : "NULL", isMissing);
+                    return isMissing;
+                })
                 .toList();
 
         if (!missing.isEmpty()) {
+            logger.error("Missing required variables in .env file: {}", missing);
             throw new IllegalStateException(
-                    "Missing required environment variables: " +
-                    missing +
-                    ". Please define them in .env or real environment."
+                    "Missing required environment variables in .env file: " + missing
             );
         }
+
+        logger.info("All required environment variables are present in .env file.");
     }
 }

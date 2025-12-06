@@ -7,10 +7,6 @@ spring:
       hibernate:
         format_sql: true
 
-app:
-  env:
-    validate-required: false
-
 server:
   error:
     include-message: always
