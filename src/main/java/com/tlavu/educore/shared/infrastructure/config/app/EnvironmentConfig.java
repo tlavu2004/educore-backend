@@ -57,7 +57,7 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
 
             // Check if .env file exists after successful loading
             // If the file existed (even if empty), Dotenv will load it successfully
-            dotenvFileExists = Files.exists(Paths.get(DOTENV_DIRECTORY + DOTENV_FILENAME));
+            dotenvFileExists = Files.exists(Paths.get(DOTENV_DIRECTORY).resolve(DOTENV_FILENAME));
             
             if (dotenvFileExists) {
                 logger.info("Environment variables loaded from .env successfully!");
@@ -105,7 +105,7 @@ public class EnvironmentConfig implements ApplicationContextInitializer<Configur
                 .getPropertySources()
                 .get("dotenvProperties");
 
-        if (dotenvSource != null && !dotenvSource.getSource().isEmpty()) {
+        if (dotenvSource != null && dotenvSource.getSource() != null && !dotenvSource.getSource().isEmpty()) {
             logger.debug("Variables in .env file: {}", dotenvSource.getSource().keySet());
         } else if (!dotenvFileExists) {
             logger.debug(".env file was not found; validating against all property sources (system environment, application.yaml, etc.)");
