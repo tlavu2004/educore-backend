@@ -35,7 +35,7 @@ server:
 
 security:
   bcrypt:
-    strength: 12
+    strength: 10
 
 logging:
   pattern:
