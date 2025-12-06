@@ -19,3 +19,12 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
     com.zaxxer.hikari: WARN
     com.zaxxer.hikari.HikariConfig: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      show-details: "never"

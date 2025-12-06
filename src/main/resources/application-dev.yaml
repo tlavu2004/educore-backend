@@ -19,3 +19,12 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     com.zaxxer.hikari: DEBUG
     com.zaxxer.hikari.HikariConfig: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics"
+  endpoint:
+    health:
+      show-details: "always"
