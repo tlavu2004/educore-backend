@@ -1,0 +1,135 @@
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    environment:
+      POSTGRES_USER: ${POSTGRES_ROOT_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ROOT_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts/postgres:/docker-entrypoint-initdb.d
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -h localhost -p 5432 -U $$POSTGRES_ROOT_USER"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  mongodb:
+    image: mongo:${MONGO_VERSION}
+    container_name: ${MONGO_CONTAINER_NAME}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_PORT}:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --username $$MONGO_INITDB_ROOT_USERNAME \
+                   --password $$MONGO_INITDB_ROOT_PASSWORD \
+                   --authenticationDatabase admin \
+                   --eval 'db.runCommand({ ping: 1 })'"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:${ZOOKEEPER_VERSION}
+    container_name: ${ZOOKEEPER_CONTAINER_NAME}
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
+      ZOOKEEPER_TICK_TIME: ${ZOOKEEPER_TICK_TIME}
+    ports:
+      - "${ZOOKEEPER_CLIENT_PORT}:2181"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "echo ruok | nc localhost 2181 | grep imok"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  broker:
+    image: confluentinc/cp-kafka:${KAFKA_VERSION}
+    container_name: ${KAFKA_CONTAINER_NAME}
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_ZOOKEEPER_CONNECT: "${ZOOKEEPER_CONTAINER_NAME}:${ZOOKEEPER_CLIENT_PORT}"
+      KAFKA_LISTENERS: INTERNAL://broker:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,EXTERNAL://localhost:${KAFKA_EXTERNAL_PORT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    ports:
+      - "${KAFKA_EXTERNAL_PORT}:9092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "nc -z broker 29092 || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
+    container_name: ${KAFKA_UI_CONTAINER_NAME}
+    depends_on:
+      - broker
+    environment:
+      KAFKA_CLUSTERS_0_NAME: "local-cluster"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "broker:29092"
+      KAFKA_CLUSTERS_0_ZOOKEEPER: "${ZOOKEEPER_CONTAINER_NAME}:${ZOOKEEPER_CLIENT_PORT}"
+    ports:
+      - "${KAFKA_UI_PORT}:8080"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:8080/actuator/health | grep UP"
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+volumes:
+  postgres-data:
+    driver: local
+  mongodb-data:
+    driver: local
+  kafka-data:
+    driver: local
+
+networks:
+  microservices-network:
+    driver: bridge
