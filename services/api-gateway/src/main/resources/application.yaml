@@ -1,0 +1,83 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: order-service
+              uri: lb://order-service
+              predicates:
+                - Path=/api/orders/**
+              filters:
+                - StripPrefix=0
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET,POST,PUT,DELETE,OPTIONS
+                    statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+                    exceptions:
+                      - java.io.IOException
+                      - java.net.ConnectException
+                      - io.netty.channel.AbstractChannel$AnnotatedConnectException
+                    backoff:
+                      firstBackoff: 50ms
+                      maxBackoff: 500ms
+                      factor: 2
+                      basedOnPreviousValue: false
+
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/notifications/**
+              filters:
+                - StripPrefix=0
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET,POST,PUT,DELETE,OPTIONS
+                    statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+                    exceptions:
+                      - java.io.IOException
+                      - java.net.ConnectException
+                      - io.netty.channel.AbstractChannel$AnnotatedConnectException
+                    backoff:
+                      firstBackoff: 50ms
+                      maxBackoff: 500ms
+                      factor: 2
+                      basedOnPreviousValue: false
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      cors:
+        allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+        allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+        allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}
+  allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway.support: DEBUG
+    org.springframework.cloud.gateway.filter.factory.RetryGatewayFilterFactory: DEBUG
+    reactor.netty.http.client: DEBUG
+    reactor.netty.http.client.HttpClientConnect: DEBUG
