@@ -14,7 +14,7 @@
     <description>Parent POM for all backend microservices.</description>
     <modules>
         <module>services/api-gateway</module>
-
+        <module>services/auth-service</module>
         <module>services/discovery-server</module>
     </modules>
     <properties>
