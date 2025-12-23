@@ -11,12 +11,12 @@ import java.util.Objects;
 @Getter
 public abstract class BaseDomainEntity<ID> {
 
-    private ID id;
-    private Instant createdAt;
-    private Instant updatedAt;
+    protected ID id;
+    protected Instant createdAt;
+    protected Instant updatedAt;
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
-    public void raiseDomainEvent(DomainEvent event) {
+    protected void raiseDomainEvent(DomainEvent event) {
         domainEvents.add(event);
     }
 
