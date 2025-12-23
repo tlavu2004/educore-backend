@@ -109,7 +109,10 @@ public class User extends BaseDomainEntity<UUID> {
     public void activateFirstLogin() {
         this.status = UserStatus.ACTIVE;
         this.lastLoginAt = Instant.now();
-        this.updatedAt = Instant.now();
+    }
+
+    public void recordLogin() {
+        this.lastLoginAt = Instant.now();
     }
 
     public void updatePassword(HashedPassword newHashedPassword) {
