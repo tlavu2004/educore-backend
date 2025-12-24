@@ -1,6 +1,7 @@
 package com.tlavu.educore.auth.user.domain.valueobject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tlavu.educore.auth.user.domain.exception.InvalidPasswordException;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -60,13 +61,13 @@ public record HashedPassword(@JsonIgnore String hashedValue) implements Serializ
     @SuppressWarnings("SameParameterValue")
     private static void requireNonBlank(String value, String fieldName) {
         if (value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " cannot be blank.");
+            throw new InvalidPasswordException(fieldName + " cannot be blank.");
         }
     }
 
     private static void requireValidPassword(String value) {
         if (!PASSWORD_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException(
+            throw new InvalidPasswordException(
                     "Invalid password format. Password must be 8–64 characters long, contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character."
             );
         }

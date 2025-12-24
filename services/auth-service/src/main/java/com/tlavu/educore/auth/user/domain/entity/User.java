@@ -98,16 +98,16 @@ public class User extends BaseDomainEntity<UUID> {
         return user;
     }
 
-    public boolean isActive() {
-        return status == UserStatus.ACTIVE;
-    }
-
     public boolean isPendingActivation() {
         return status == UserStatus.PENDING_ACTIVATION;
     }
 
+    public boolean isActivated() {
+        return status == UserStatus.ACTIVATED;
+    }
+
     public void activateFirstLogin() {
-        this.status = UserStatus.ACTIVE;
+        this.status = UserStatus.ACTIVATED;
         this.lastLoginAt = Instant.now();
     }
 
@@ -121,12 +121,12 @@ public class User extends BaseDomainEntity<UUID> {
     }
 
     public void activate() {
-        this.status = UserStatus.ACTIVE;
+        this.status = UserStatus.ACTIVATED;
         this.updatedAt = Instant.now();
     }
 
     public void deactivate() {
-        this.status = UserStatus.INACTIVE;
+        this.status = UserStatus.SUSPENDED;
         this.updatedAt = Instant.now();
     }
 }
