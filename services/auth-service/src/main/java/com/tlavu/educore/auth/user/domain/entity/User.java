@@ -106,6 +106,10 @@ public class User extends BaseDomainEntity<UUID> {
         return status == UserStatus.ACTIVATED;
     }
 
+    public boolean isSuspended() {
+        return status == UserStatus.SUSPENDED;
+    }
+
     public void activateFirstLogin() {
         this.status = UserStatus.ACTIVATED;
         this.lastLoginAt = Instant.now();
