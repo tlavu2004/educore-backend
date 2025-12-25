@@ -1,26 +1,26 @@
-package com.tlavu.educore.auth.user.domain.valueobject;
+package com.tlavu.educore.auth.authentication.domain.valueobject;
 
 import lombok.NonNull;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public record ActivationTokenValue(String value) {
+public record RefreshTokenValue(String value) {
 
     // --- Constructors ---
-    public ActivationTokenValue {
-        Objects.requireNonNull(value, "activationToken cannot be null");
-        requireNonBlank(value, "activationToken");
+    public RefreshTokenValue {
+        Objects.requireNonNull(value, "refreshToken cannot be null");
+        requireNonBlank(value, "refreshToken");
     }
 
     // --- Static factory methods ---
-    public static ActivationTokenValue of(String value) {
-        return new ActivationTokenValue(value);
+    public static RefreshTokenValue of(String value) {
+        return new RefreshTokenValue(value);
     }
 
     // --- Business methods ---
-    public static ActivationTokenValue generate() {
-        return new ActivationTokenValue(UUID.randomUUID().toString());
+    public static RefreshTokenValue generate() {
+        return new RefreshTokenValue(UUID.randomUUID().toString());
     }
 
     // --- Overrides ---

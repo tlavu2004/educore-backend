@@ -16,6 +16,15 @@ public abstract class BaseDomainEntity<ID> {
     protected Instant updatedAt;
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
+    protected void markCreated() {
+        this.createdAt = Instant.now();
+        this.updatedAt = this.createdAt;
+    }
+
+    protected void markUpdated() {
+        this.updatedAt = Instant.now();
+    }
+
     protected void raiseDomainEvent(DomainEvent event) {
         domainEvents.add(event);
     }

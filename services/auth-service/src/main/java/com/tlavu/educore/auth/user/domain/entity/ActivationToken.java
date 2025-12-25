@@ -13,36 +13,40 @@ import java.util.UUID;
 @Getter
 public class ActivationToken extends BaseDomainEntity<UUID> {
 
-    private final ActivationTokenValue tokenValue;
+    private final ActivationTokenValue activationTokenValue;
     private final UUID userId;
     private final Instant expiresAt;
     private Instant usedAt;
 
     public ActivationToken(
             UUID id,
-            ActivationTokenValue tokenValue,
+            ActivationTokenValue activationTokenValue,
             UUID userId,
             Instant expiresAt
     ) {
         this.id = id;
-        this.tokenValue = tokenValue;
+        this.activationTokenValue = activationTokenValue;
         this.userId = userId;
         this.expiresAt = expiresAt;
+        this.markCreated();
     }
 
     public static ActivationToken createNew(
-            ActivationTokenValue tokenValue,
+            ActivationTokenValue activationTokenValue,
             UUID userId,
             Instant expiresAt
     ) {
-        Objects.requireNonNull(tokenValue, "tokenValue cannot be null");
+        Objects.requireNonNull(activationTokenValue, "activationTokenValue cannot be null");
         Objects.requireNonNull(userId, "userId cannot be null");
         Objects.requireNonNull(expiresAt, "expiresAt cannot be null");
 
-        Instant now = Instant.now();
+        if (expiresAt.isBefore(Instant.now())) {
+            throw new IllegalArgumentException("expiresAt must be in the future");
+        }
+
         return new ActivationToken(
                 UUID.randomUUID(),
-                tokenValue,
+                activationTokenValue,
                 userId,
                 expiresAt
         );
@@ -50,22 +54,27 @@ public class ActivationToken extends BaseDomainEntity<UUID> {
 
     public static ActivationToken reconstruct(
             UUID id,
-            ActivationTokenValue tokenValue,
+            ActivationTokenValue activationTokenValue,
             UUID userId,
             Instant expiresAt,
-            Instant usedAt
+            Instant usedAt,
+            Instant createdAt,
+            Instant updatedAt
     ) {
         ActivationToken activationToken = new ActivationToken(
                 id,
-                tokenValue,
+                activationTokenValue,
                 userId,
                 expiresAt
         );
         activationToken.usedAt = usedAt;
+        activationToken.createdAt = createdAt;
+        activationToken.updatedAt = updatedAt;
         return activationToken;
     }
 
     public boolean isExpired(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
         return now.isAfter(expiresAt);
     }
 
@@ -74,21 +83,21 @@ public class ActivationToken extends BaseDomainEntity<UUID> {
     }
 
     public boolean isValid(Instant now) {
-        return !isUsed() && !isExpired(now);
-    }
-
-    public boolean canBeUsedAt(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
         return !isUsed() && !isExpired(now);
     }
 
     public void markAsUsed(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
+
         if (isUsed()) {
             throw new ActivationTokenAlreadyUsedException("Activation token has already been used.");
         }
         if (isExpired(now)) {
             throw new ActivationTokenExpiredException("Activation token has expired.");
         }
-        this.usedAt = Instant.now();
+
+        this.usedAt = now;
+        this.markUpdated();
     }
 }
-
