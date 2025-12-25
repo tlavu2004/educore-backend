@@ -41,7 +41,7 @@ public class ActivationToken extends BaseDomainEntity<UUID> {
         Objects.requireNonNull(expiresAt, "expiresAt cannot be null");
 
         if (expiresAt.isBefore(Instant.now())) {
-            throw new IllegalArgumentException("expiresAt must be in the future");
+            throw new ActivationTokenExpiredException("expiresAt must be in the future");
         }
 
         return new ActivationToken(

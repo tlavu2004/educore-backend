@@ -1,5 +1,6 @@
 package com.tlavu.educore.auth.authentication.domain.entity;
 
+import com.tlavu.educore.auth.authentication.domain.exception.RefreshTokenExpiredException;
 import com.tlavu.educore.auth.authentication.domain.valueobject.RefreshTokenValue;
 import com.tlavu.educore.auth.shared.domain.entity.BaseDomainEntity;
 import lombok.Getter;
@@ -37,6 +38,10 @@ public class RefreshToken extends BaseDomainEntity<UUID> {
         Objects.requireNonNull(refreshTokenValue, "refreshTokenValue cannot be null");
         Objects.requireNonNull(userId, "userId cannot be null");
         Objects.requireNonNull(expiresAt, "expiresAt cannot be null");
+
+        if (expiresAt.isBefore(Instant.now())) {
+            throw new RefreshTokenExpiredException("expiresAt must be in the future");
+        }
 
         return new RefreshToken(
                 UUID.randomUUID(),

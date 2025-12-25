@@ -1,6 +1,8 @@
 package com.tlavu.educore.auth.user.domain.exception;
 
-public class AccountNotActivatedException extends RuntimeException {
+import com.tlavu.educore.auth.shared.domain.exception.DomainException;
+
+public class AccountNotActivatedException extends DomainException {
 
     public AccountNotActivatedException(String message) {
         super(message);
