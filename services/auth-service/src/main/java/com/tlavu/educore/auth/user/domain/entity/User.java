@@ -110,13 +110,29 @@ public class User extends BaseDomainEntity<UUID> {
         return status == UserStatus.SUSPENDED;
     }
 
-    public void activateFirstLogin() {
+    public void completeFirstLogin() {
+        if (this.status != UserStatus.PENDING_ACTIVATION) {
+            throw new IllegalStateException(
+                    "Cannot complete first login: user is not pending activation"
+            );
+        }
+
+        if (this.lastLoginAt != null) {
+            throw new IllegalStateException("First login already completed");
+        }
+
         this.status = UserStatus.ACTIVATED;
         this.lastLoginAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
     public void recordLogin() {
+        if (this.status != UserStatus.ACTIVATED) {
+            throw new IllegalStateException("Account is not activated");
+        }
+
         this.lastLoginAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
     public void updatePassword(HashedPassword newHashedPassword) {
@@ -134,4 +150,3 @@ public class User extends BaseDomainEntity<UUID> {
         this.updatedAt = Instant.now();
     }
 }
-
