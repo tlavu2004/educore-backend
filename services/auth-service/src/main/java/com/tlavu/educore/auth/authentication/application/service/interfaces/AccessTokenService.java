@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public interface AccessTokenService {
 
-    public String generate(User user);
-    public boolean validate(String token);
-    public UUID extractUserId(String token);
-    public Instant extractExpiration(String token);
+    String generate(UUID userId, String email, String role);
+    boolean validate(String token);
+    UUID extractUserId(String token);
+    Instant extractExpiration(String token);
 }

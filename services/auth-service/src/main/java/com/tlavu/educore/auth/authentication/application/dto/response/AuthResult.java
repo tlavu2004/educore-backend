@@ -8,7 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AuthResult {
 
-    private final UserResponse userResponse;
     private final String accessToken;
     private final String refreshToken;
     private final Long expiresIn;
