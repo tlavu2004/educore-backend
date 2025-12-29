@@ -12,7 +12,7 @@ public class GetUserByIdHandler {
 
     private final UserRepository userRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public User handle(GetUserByIdQuery query) {
         return userRepository.findById(query.userId())
                 .orElseThrow(() -> new UserNotFoundException(

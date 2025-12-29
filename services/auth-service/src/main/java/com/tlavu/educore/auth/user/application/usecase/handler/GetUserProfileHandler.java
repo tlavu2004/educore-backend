@@ -13,7 +13,7 @@ public class GetUserProfileHandler {
 
     private final UserRepository userRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public UserProfileResponse handle(GetUserProfileQuery query) {
         User user = userRepository.findById(query.userId())
                 .orElseThrow(() -> new UserNotFoundException(
