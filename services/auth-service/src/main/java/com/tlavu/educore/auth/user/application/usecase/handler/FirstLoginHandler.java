@@ -18,6 +18,5 @@ public class FirstLoginHandler {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         user.completeFirstLogin();
-        userRepository.save(user);
     }
 }

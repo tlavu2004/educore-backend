@@ -58,9 +58,6 @@ public class ChangePasswordHandler {
         // Update password
         user.updatePassword(newHashedPassword);
 
-        // Save
-        userRepository.save(user);
-
         // Optional: Revoke all refresh tokens when the password is changed
         // refreshTokenService.revokeAllTokensForUser(user.getId(), "password_changed");
     }
