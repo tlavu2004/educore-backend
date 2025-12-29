@@ -7,6 +7,7 @@ import com.tlavu.educore.auth.user.domain.valueobject.Email;
 import com.tlavu.educore.auth.user.domain.valueobject.HashedPassword;
 import lombok.Getter;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -49,13 +50,15 @@ public class User extends BaseDomainEntity<UUID> {
             HashedPassword hashedPassword,
             String fullName,
             UserRole role,
-            UUID createdById
+            UUID createdById,
+            Clock clock
     ) {
         Objects.requireNonNull(email, "email cannot be null");
         Objects.requireNonNull(hashedPassword, "hashedPassword cannot be null");
         Objects.requireNonNull(fullName, "fullName cannot be null");
         Objects.requireNonNull(role, "role cannot be null");
         Objects.requireNonNull(createdById, "createdById cannot be null");
+        Objects.requireNonNull(clock, "clock cannot be null");
 
         Instant now = Instant.now();
         return new User(
@@ -110,7 +113,10 @@ public class User extends BaseDomainEntity<UUID> {
         return status == UserStatus.SUSPENDED;
     }
 
-    public void completeFirstLogin() {
+    // TODO: Update all domain entity methods to use Clock parameter
+    public void completeFirstLogin(Clock clock) {
+        Objects.requireNonNull(clock, "clock cannot be null");
+
         if (this.status != UserStatus.PENDING_ACTIVATION) {
             throw new IllegalStateException(
                     "Cannot complete first login: user is not pending activation"
@@ -121,31 +127,42 @@ public class User extends BaseDomainEntity<UUID> {
             throw new IllegalStateException("First login already completed");
         }
 
+        Instant now = Instant.now(clock);
         this.status = UserStatus.ACTIVATED;
-        this.lastLoginAt = Instant.now();
-        this.updatedAt = Instant.now();
+        this.lastLoginAt = now;
+        this.updatedAt = now;
     }
 
-    public void recordLogin() {
+    public void recordLogin(Clock clock) {
+        Objects.requireNonNull(clock, "clock cannot be null");
+
         if (this.status != UserStatus.ACTIVATED) {
             throw new IllegalStateException("Account is not activated");
         }
 
-        this.lastLoginAt = Instant.now();
-        this.updatedAt = Instant.now();
+        Instant now = Instant.now(clock);
+        this.lastLoginAt = now;
+        this.updatedAt = now;
     }
 
-    public void updatePassword(HashedPassword newHashedPassword) {
+    public void updatePassword(HashedPassword newHashedPassword, Clock clock) {
+        Objects.requireNonNull(newHashedPassword, "newHashedPassword cannot be null");
+        Objects.requireNonNull(clock, "clock cannot be null");
+
         this.hashedPassword = newHashedPassword;
-        this.updatedAt = Instant.now();
+        this.updatedAt = Instant.now(clock);
     }
 
-    public void activate() {
+    public void activate(Clock clock) {
+        Objects.requireNonNull(clock, "clock cannot be null");
+
         this.status = UserStatus.ACTIVATED;
         this.updatedAt = Instant.now();
     }
 
-    public void deactivate() {
+    public void deactivate(Clock clock) {
+        Objects.requireNonNull(clock, "clock cannot be null");
+
         this.status = UserStatus.SUSPENDED;
         this.updatedAt = Instant.now();
     }

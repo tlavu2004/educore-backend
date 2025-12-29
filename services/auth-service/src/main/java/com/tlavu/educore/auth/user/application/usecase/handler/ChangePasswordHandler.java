@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class ChangePasswordHandler {
     private final UserRepository userRepository;
     private final AuthContext authContext;
     private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
 
     @Transactional
     public void handle(ChangePasswordCommand command) {
@@ -56,7 +58,7 @@ public class ChangePasswordHandler {
         );
 
         // Update password
-        user.updatePassword(newHashedPassword);
+        user.updatePassword(newHashedPassword, clock);
 
         // Optional: Revoke all refresh tokens when the password is changed
         // refreshTokenService.revokeAllTokensForUser(user.getId(), "password_changed");

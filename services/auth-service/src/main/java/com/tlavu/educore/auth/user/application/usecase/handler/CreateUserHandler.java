@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class CreateUserHandler {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthContext authContext;
+    private final Clock clock;
 
     @Transactional
     public User handle(CreateUserCommand command) {
@@ -34,7 +36,8 @@ public class CreateUserHandler {
                 hashedPassword,
                 command.fullName(),
                 UserRole.ADMIN,
-                createdById
+                createdById,
+                clock
         );
 
         return userRepository.save(user);
