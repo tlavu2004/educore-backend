@@ -31,7 +31,6 @@ public class LoginHandler {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
-        // TODO: Review the mechanism for password matching
         if (!user.getHashedPassword().matches(
                 command.password(),
                 passwordEncoder::matches

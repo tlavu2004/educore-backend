@@ -4,7 +4,6 @@ import com.tlavu.educore.auth.shared.application.security.AuthContext;
 import com.tlavu.educore.auth.user.application.usecase.command.ChangePasswordCommand;
 import com.tlavu.educore.auth.user.domain.entity.User;
 import com.tlavu.educore.auth.user.domain.exception.InvalidOldPasswordException;
-import com.tlavu.educore.auth.user.domain.exception.InvalidPasswordException;
 import com.tlavu.educore.auth.user.domain.exception.SamePasswordException;
 import com.tlavu.educore.auth.user.domain.exception.UserNotFoundException;
 import com.tlavu.educore.auth.user.domain.repository.UserRepository;
