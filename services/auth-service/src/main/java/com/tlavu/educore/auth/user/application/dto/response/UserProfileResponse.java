@@ -15,16 +15,4 @@ public record UserProfileResponse(
         UserStatus status,
         Instant createdAt,
         Instant lastLoginAt
-) {
-    public static UserProfileResponse fromEntity(User user) {
-        return new UserProfileResponse(
-                user.getId(),
-                user.getEmail().toString(),
-                user.getFullName(),
-                user.getRole(),
-                user.getStatus(),
-                user.getCreatedAt(),
-                user.getLastLoginAt()
-        );
-    }
-}
+) {}

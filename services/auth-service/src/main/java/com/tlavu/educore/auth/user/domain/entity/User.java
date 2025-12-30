@@ -15,6 +15,7 @@ import java.util.UUID;
 @Getter
 public class User extends BaseDomainEntity<UUID> {
 
+    // TODO: UpdateUserProfileRequest
     private final Email email;                  // Mìght need to be mutable in future for email change feature
     private HashedPassword hashedPassword;
     private final String fullName;              // Mìght need to be mutable in future for name change feature
@@ -113,7 +114,6 @@ public class User extends BaseDomainEntity<UUID> {
         return status == UserStatus.SUSPENDED;
     }
 
-    // TODO: Update all domain entity methods to use Clock parameter
     public void completeFirstLogin(Clock clock) {
         Objects.requireNonNull(clock, "clock cannot be null");
 
