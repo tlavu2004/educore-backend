@@ -30,7 +30,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         RefreshToken refreshToken = RefreshToken.createNew(
                 RefreshTokenValue.generate(),
                 userId,
-                Instant.now(clock).plus(REFRESH_TOKEN_TTL)
+                Instant.now(clock).plus(REFRESH_TOKEN_TTL),
+                clock
         );
 
         return refreshTokenRepository.save(refreshToken);
@@ -47,7 +48,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         RefreshToken newRefreshToken = RefreshToken.createNew(
                 RefreshTokenValue.generate(),
                 refreshToken.getUserId(),
-                Instant.now(clock).plus(REFRESH_TOKEN_TTL)
+                Instant.now(clock).plus(REFRESH_TOKEN_TTL),
+                clock
         );
 
         refreshTokenRepository.save(refreshToken);

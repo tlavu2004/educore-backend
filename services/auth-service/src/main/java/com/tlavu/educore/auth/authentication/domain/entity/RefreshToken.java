@@ -5,6 +5,7 @@ import com.tlavu.educore.auth.authentication.domain.valueobject.RefreshTokenValu
 import com.tlavu.educore.auth.shared.domain.entity.BaseDomainEntity;
 import lombok.Getter;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,7 +17,7 @@ public class RefreshToken extends BaseDomainEntity<UUID> {
     private final UUID userId;
     private final Instant expiresAt;
     private boolean revoked;
-    
+
     public RefreshToken(
             UUID id,
             RefreshTokenValue refreshTokenValue,
@@ -33,13 +34,16 @@ public class RefreshToken extends BaseDomainEntity<UUID> {
     public static RefreshToken createNew(
             RefreshTokenValue refreshTokenValue,
             UUID userId,
-            Instant expiresAt
+            Instant expiresAt,
+            Clock clock
     ) {
         Objects.requireNonNull(refreshTokenValue, "refreshTokenValue cannot be null");
         Objects.requireNonNull(userId, "userId cannot be null");
         Objects.requireNonNull(expiresAt, "expiresAt cannot be null");
+        Objects.requireNonNull(clock, "clock cannot be null");
 
-        if (expiresAt.isBefore(Instant.now())) {
+        Instant now = Instant.now(clock);
+        if (expiresAt.isBefore(now)) {
             throw new RefreshTokenExpiredException("expiresAt must be in the future");
         }
 
@@ -73,10 +77,12 @@ public class RefreshToken extends BaseDomainEntity<UUID> {
     }
 
     public boolean isExpired(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
         return now.isAfter(expiresAt);
     }
 
     public boolean isValid(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
         return !isExpired(now) && !revoked;
     }
 

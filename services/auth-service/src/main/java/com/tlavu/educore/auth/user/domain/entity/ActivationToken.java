@@ -6,6 +6,7 @@ import com.tlavu.educore.auth.user.domain.exception.ActivationTokenExpiredExcept
 import com.tlavu.educore.auth.user.domain.valueobject.ActivationTokenValue;
 import lombok.Getter;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -34,13 +35,16 @@ public class ActivationToken extends BaseDomainEntity<UUID> {
     public static ActivationToken createNew(
             ActivationTokenValue activationTokenValue,
             UUID userId,
-            Instant expiresAt
+            Instant expiresAt,
+            Clock clock
     ) {
         Objects.requireNonNull(activationTokenValue, "activationTokenValue cannot be null");
         Objects.requireNonNull(userId, "userId cannot be null");
         Objects.requireNonNull(expiresAt, "expiresAt cannot be null");
+        Objects.requireNonNull(clock, "clock cannot be null");
 
-        if (expiresAt.isBefore(Instant.now())) {
+        Instant now = Instant.now(clock);
+        if (expiresAt.isBefore(now)) {
             throw new ActivationTokenExpiredException("expiresAt must be in the future");
         }
 
