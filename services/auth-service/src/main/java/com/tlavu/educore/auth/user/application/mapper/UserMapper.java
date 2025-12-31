@@ -17,14 +17,14 @@ import java.util.List;
 )
 public interface UserMapper {
 
-    @Mapping(target = "email", expression = "java(user.getEmail().getValue())")
+    @Mapping(target = "email", expression = "java(user.getEmail().value())")
     @Mapping(target = "role", expression = "java(user.getRole().name())")
     @Mapping(target = "status", expression = "java(user.getStatus().name())")
     UserResponse toResponse(User user);
 
     List<UserResponse> toResponseList(List<User> users);
 
-    @Mapping(target = "email", expression = "java(user.getEmail().getValue())")
+    @Mapping(target = "email", expression = "java(user.getEmail().value())")
     UserProfileResponse toProfileResponse(User user);
 
     List<UserProfileResponse> toProfileResponseList(List<User> users);
