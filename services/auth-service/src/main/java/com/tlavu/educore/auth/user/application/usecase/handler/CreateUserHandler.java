@@ -11,7 +11,7 @@ import com.tlavu.educore.auth.user.domain.valueobject.ActivationTokenValue;
 import com.tlavu.educore.auth.user.domain.valueobject.Email;
 import com.tlavu.educore.auth.user.domain.valueobject.HashedPassword;
 import com.tlavu.educore.auth.user.domain.event.ActivationTokenCreatedEvent;
-import com.tlavu.educore.auth.shared.application.event.EventPublisher;
+import com.tlavu.educore.auth.shared.domain.event.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ public class CreateUserHandler {
     private final ActivationTokenRepository activationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthContext authContext;
-    private final EventPublisher eventPublisher;
+    private final DomainEventPublisher eventPublisher;
     private final Clock clock;
 
     @Transactional
@@ -62,7 +62,7 @@ public class CreateUserHandler {
 
         ActivationToken savedToken = activationTokenRepository.save(activationToken);
 
-        // Publish event for infra to send email (listener will build link using frontend base URL)
+        // Publish domain event for infra to send email (listener will build link using frontend base URL)
         eventPublisher.publish(new ActivationTokenCreatedEvent(
                 saved.getId(),
                 saved.getEmail().toString(),
