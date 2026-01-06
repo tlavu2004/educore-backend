@@ -14,7 +14,6 @@ import lombok.Getter;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 
 @Getter
 public class User extends BaseDomainEntity<UserId> {
@@ -68,7 +67,7 @@ public class User extends BaseDomainEntity<UserId> {
 
         Instant now = Instant.now(clock);
         return new User(
-                UserId.of(UUID.randomUUID()),
+                UserId.generate(),
                 email,
                 hashedPassword,
                 fullName,

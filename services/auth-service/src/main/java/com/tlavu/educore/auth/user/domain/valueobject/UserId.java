@@ -30,7 +30,6 @@ public record UserId(UUID value) implements Serializable {
     }
 
     // --- Business methods ---
-    // TODO: centralize ID generation policy here (UUID v4 for now)
     public static UserId generate() {
         return new UserId(UUID.randomUUID());
     }
