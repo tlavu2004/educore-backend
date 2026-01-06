@@ -41,12 +41,12 @@ public class LoginHandler {
         user.recordLogin(clock);
 
         String accessToken = accessTokenService.generate(
-                user.getId(),
+                user.getId().value(),
                 user.getEmail().value(),
                 user.getRole().name()
         );
 
-        RefreshToken refreshToken = refreshTokenService.issue(user.getId());
+        RefreshToken refreshToken = refreshTokenService.issue(user.getId().value());
 
         return new AuthResult(
                 accessToken,

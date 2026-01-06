@@ -1,8 +1,9 @@
 package com.tlavu.educore.auth.authentication.domain.entity;
 
-import com.tlavu.educore.auth.authentication.domain.exception.RefreshTokenExpiredException;
+import com.tlavu.educore.auth.authentication.domain.exception.InvalidRefreshTokenExpiryException;
 import com.tlavu.educore.auth.authentication.domain.valueobject.RefreshTokenValue;
 import com.tlavu.educore.auth.shared.domain.entity.BaseDomainEntity;
+import com.tlavu.educore.auth.user.domain.valueobject.UserId;
 import lombok.Getter;
 
 import java.time.Clock;
@@ -13,27 +14,32 @@ import java.util.UUID;
 @Getter
 public class RefreshToken extends BaseDomainEntity<UUID> {
 
-    private final RefreshTokenValue refreshTokenValue;
-    private final UUID userId;
-    private final Instant expiresAt;
-    private boolean revoked;
+    private RefreshTokenValue refreshTokenValue;
+    private UserId userId;
+    private Instant expiresAt;
+    private Instant revokedAt;
 
-    public RefreshToken(
+    private RefreshToken() {
+        // For reconstruction purposes
+    }
+
+    protected RefreshToken(
             UUID id,
             RefreshTokenValue refreshTokenValue,
-            UUID userId,
-            Instant expiresAt
+            UserId userId,
+            Instant expiresAt,
+            Instant now
     ) {
         this.id = id;
         this.refreshTokenValue = refreshTokenValue;
         this.userId = userId;
         this.expiresAt = expiresAt;
-        this.markCreated();
+        this.markCreated(now);
     }
     
     public static RefreshToken createNew(
             RefreshTokenValue refreshTokenValue,
-            UUID userId,
+            UserId userId,
             Instant expiresAt,
             Clock clock
     ) {
@@ -44,36 +50,45 @@ public class RefreshToken extends BaseDomainEntity<UUID> {
 
         Instant now = Instant.now(clock);
         if (expiresAt.isBefore(now)) {
-            throw new RefreshTokenExpiredException("expiresAt must be in the future");
+            throw new InvalidRefreshTokenExpiryException("expiresAt must be in the future");
         }
 
         return new RefreshToken(
                 UUID.randomUUID(),
                 refreshTokenValue,
                 userId,
-                expiresAt
+                expiresAt,
+                now
         );
     }
 
     public static RefreshToken reconstruct(
             UUID id,
             RefreshTokenValue refreshTokenValue,
-            UUID userId,
+            UserId userId,
             Instant expiresAt,
-            boolean revoked,
-            Instant createAt,
-            Instant updateAt
+            Instant revokedAt,
+            Instant createdAt,
+            Instant updatedAt
     ) {
-        RefreshToken refreshToken = new RefreshToken(
-                id,
-                refreshTokenValue,
-                userId,
-                expiresAt
-        );
-        refreshToken.revoked = revoked;
-        refreshToken.createdAt = createAt;
-        refreshToken.updatedAt = updateAt;
-        return refreshToken;
+        Objects.requireNonNull(id, "id cannot be null");
+        Objects.requireNonNull(refreshTokenValue, "refreshTokenValue cannot be null");
+        Objects.requireNonNull(userId, "userId cannot be null");
+        Objects.requireNonNull(expiresAt, "expiresAt cannot be null");
+        Objects.requireNonNull(createdAt, "createdAt cannot be null");
+        Objects.requireNonNull(updatedAt, "updatedAt cannot be null");
+
+        RefreshToken token = new RefreshToken();
+
+        token.id = id;
+        token.refreshTokenValue = refreshTokenValue;
+        token.userId = userId;
+        token.expiresAt = expiresAt;
+        token.revokedAt = revokedAt;
+        token.createdAt = createdAt;
+        token.updatedAt = updatedAt;
+
+        return token;
     }
 
     public boolean isExpired(Instant now) {
@@ -81,16 +96,21 @@ public class RefreshToken extends BaseDomainEntity<UUID> {
         return now.isAfter(expiresAt);
     }
 
-    public boolean isValid(Instant now) {
-        Objects.requireNonNull(now, "now cannot be null");
-        return !isExpired(now) && !revoked;
+    public boolean isRevoked() {
+        return revokedAt != null;
     }
 
-    public void revoke() {
-        if (!this.revoked) {
-            this.revoked = true;
-            markUpdated();
+    public boolean isValid(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
+        return !isExpired(now) && !isRevoked();
+    }
+
+    public void revoke(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
+
+        if (this.revokedAt == null) {
+            this.revokedAt = now;
+            markUpdated(now);
         }
     }
 }
-

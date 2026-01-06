@@ -25,11 +25,11 @@ public class RefreshTokenHandler {
 
         RefreshToken newRefreshToken = refreshTokenService.rotate(refreshTokenValue);
 
-        User user = userRepository.findById(newRefreshToken.getUserId())
+        User user = userRepository.findById(newRefreshToken.getUserId().value())
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + newRefreshToken.getUserId()));
 
         String accessToken = accessTokenService.generate(
-                user.getId(),
+                user.getId().value(),
                 user.getEmail().value(),
                 user.getRole().name()
         );

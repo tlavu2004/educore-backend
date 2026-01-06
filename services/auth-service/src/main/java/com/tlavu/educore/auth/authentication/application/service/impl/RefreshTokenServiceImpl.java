@@ -5,6 +5,7 @@ import com.tlavu.educore.auth.authentication.domain.entity.RefreshToken;
 import com.tlavu.educore.auth.authentication.domain.exception.InvalidRefreshTokenException;
 import com.tlavu.educore.auth.authentication.domain.repository.RefreshTokenRepository;
 import com.tlavu.educore.auth.authentication.domain.valueobject.RefreshTokenValue;
+import com.tlavu.educore.auth.user.domain.valueobject.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         // TODO: Set expiration from configuration (environment variable)
         RefreshToken refreshToken = RefreshToken.createNew(
                 RefreshTokenValue.generate(),
-                userId,
+                UserId.of(userId),
                 Instant.now(clock).plus(REFRESH_TOKEN_TTL),
                 clock
         );
@@ -43,7 +44,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenValue)
                 .orElseThrow(() -> new InvalidRefreshTokenException("Refresh token not found"));
 
-        refreshToken.revoke();
+        Instant now = Instant.now(clock);
+        refreshToken.revoke(now);
 
         RefreshToken newRefreshToken = RefreshToken.createNew(
                 RefreshTokenValue.generate(),

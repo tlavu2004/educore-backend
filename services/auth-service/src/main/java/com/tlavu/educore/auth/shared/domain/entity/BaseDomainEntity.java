@@ -16,16 +16,22 @@ public abstract class BaseDomainEntity<ID> {
     protected Instant updatedAt;
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
-    protected void markCreated() {
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
+    protected void markCreated(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
+
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
-    protected void markUpdated() {
-        this.updatedAt = Instant.now();
+    protected void markUpdated(Instant now) {
+        Objects.requireNonNull(now, "now cannot be null");
+
+        this.updatedAt = now;
     }
 
     protected void raiseDomainEvent(DomainEvent event) {
+        Objects.requireNonNull(event, "event cannot be null");
+
         domainEvents.add(event);
     }
 

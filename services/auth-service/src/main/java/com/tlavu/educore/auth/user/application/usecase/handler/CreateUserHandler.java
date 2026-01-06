@@ -12,6 +12,7 @@ import com.tlavu.educore.auth.user.domain.valueobject.Email;
 import com.tlavu.educore.auth.user.domain.valueobject.HashedPassword;
 import com.tlavu.educore.auth.user.domain.event.ActivationTokenCreatedEvent;
 import com.tlavu.educore.auth.shared.domain.event.DomainEventPublisher;
+import com.tlavu.educore.auth.user.domain.valueobject.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +46,7 @@ public class CreateUserHandler {
                 hashedPassword,
                 command.fullName(),
                 UserRole.ADMIN,
-                createdById,
+                UserId.of(createdById),
                 clock
         );
 
@@ -55,7 +56,7 @@ public class CreateUserHandler {
         Instant expiresAt = Instant.now(clock).plus(Duration.ofDays(7));
         ActivationToken activationToken = ActivationToken.createNew(
                 ActivationTokenValue.generate(),
-                saved.getId(),
+                UserId.of(saved.getId().value()),
                 expiresAt,
                 clock
         );
@@ -64,7 +65,7 @@ public class CreateUserHandler {
 
         // Publish domain event for infra to send email (listener will build link using frontend base URL)
         eventPublisher.publish(new ActivationTokenCreatedEvent(
-                saved.getId(),
+                saved.getId().value(),
                 saved.getEmail().toString(),
                 savedToken.getActivationTokenValue().toString(),
                 null, // redirectUrl — can be filled by caller or env in listener

@@ -3,8 +3,12 @@ package com.tlavu.educore.auth.user.domain.entity;
 import com.tlavu.educore.auth.shared.domain.entity.BaseDomainEntity;
 import com.tlavu.educore.auth.user.domain.enums.UserRole;
 import com.tlavu.educore.auth.user.domain.enums.UserStatus;
+import com.tlavu.educore.auth.user.domain.exception.UserAlreadyActivatedException;
+import com.tlavu.educore.auth.user.domain.exception.UserNotActivatedException;
+import com.tlavu.educore.auth.user.domain.exception.UserNotPendingActivationException;
 import com.tlavu.educore.auth.user.domain.valueobject.Email;
 import com.tlavu.educore.auth.user.domain.valueobject.HashedPassword;
+import com.tlavu.educore.auth.user.domain.valueobject.UserId;
 import lombok.Getter;
 
 import java.time.Clock;
@@ -13,27 +17,29 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
-public class User extends BaseDomainEntity<UUID> {
+public class User extends BaseDomainEntity<UserId> {
 
-    // TODO: UpdateUserProfileRequest
-    private final Email email;                  // Mìght need to be mutable in future for email change feature
+    private Email email;
     private HashedPassword hashedPassword;
-    private final String fullName;              // Mìght need to be mutable in future for name change feature
+    private String fullName;
     private UserStatus status;
-    private final UserRole role;                // Might need to be mutable in future for role change feature
+    private UserRole role;
     private Instant lastLoginAt;
-    private final UUID createdById;
+    private UserId createdById;
 
-    public User(
-            UUID id,
+    private User() {
+        // For reconstruction purposes
+    }
+
+    protected User(
+            UserId id,
             Email email,
             HashedPassword hashedPassword,
             String fullName,
             UserRole role,
             UserStatus status,
-            Instant createdAt,
-            Instant updatedAt,
-            UUID createdById
+            UserId createdById,
+            Instant now
     ) {
         this.id = id;
         this.email = email;
@@ -41,9 +47,8 @@ public class User extends BaseDomainEntity<UUID> {
         this.fullName = fullName;
         this.role = role;
         this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.createdById = createdById;
+        this.markCreated(now);
     }
 
     public static User createNew(
@@ -51,7 +56,7 @@ public class User extends BaseDomainEntity<UUID> {
             HashedPassword hashedPassword,
             String fullName,
             UserRole role,
-            UUID createdById,
+            UserId createdById,
             Clock clock
     ) {
         Objects.requireNonNull(email, "email cannot be null");
@@ -61,22 +66,21 @@ public class User extends BaseDomainEntity<UUID> {
         Objects.requireNonNull(createdById, "createdById cannot be null");
         Objects.requireNonNull(clock, "clock cannot be null");
 
-        Instant now = Instant.now();
+        Instant now = Instant.now(clock);
         return new User(
-                UUID.randomUUID(),
+                UserId.of(UUID.randomUUID()),
                 email,
                 hashedPassword,
                 fullName,
                 role,
                 UserStatus.PENDING_ACTIVATION,
-                now,
-                now,
-                createdById
+                createdById,
+                now
         );
     }
 
     public static User reconstruct(
-            UUID id,
+            UserId id,
             Email email,
             HashedPassword hashedPassword,
             String fullName,
@@ -85,20 +89,21 @@ public class User extends BaseDomainEntity<UUID> {
             Instant createdAt,
             Instant updatedAt,
             Instant lastLoginAt,
-            UUID createdById
+            UserId createdById
     ) {
-        User user = new User(
-                id,
-                email,
-                hashedPassword,
-                fullName,
-                role,
-                status,
-                createdAt,
-                updatedAt,
-                createdById
-        );
+        User user = new User();
+
+        user.id = id;
+        user.email = email;
+        user.hashedPassword = hashedPassword;
+        user.fullName = fullName;
+        user.role = role;
+        user.status = status;
+        user.createdAt = createdAt;
+        user.updatedAt = updatedAt;
         user.lastLoginAt = lastLoginAt;
+        user.createdById = createdById;
+
         return user;
     }
 
@@ -114,56 +119,53 @@ public class User extends BaseDomainEntity<UUID> {
         return status == UserStatus.SUSPENDED;
     }
 
-    public void completeFirstLogin(Clock clock) {
-        Objects.requireNonNull(clock, "clock cannot be null");
-
-        if (this.status != UserStatus.PENDING_ACTIVATION) {
-            throw new IllegalStateException(
-                    "Cannot complete first login: user is not pending activation"
-            );
-        }
-
-        if (this.lastLoginAt != null) {
-            throw new IllegalStateException("First login already completed");
-        }
-
-        Instant now = Instant.now(clock);
-        this.status = UserStatus.ACTIVATED;
-        this.lastLoginAt = now;
-        this.updatedAt = now;
-    }
-
     public void recordLogin(Clock clock) {
         Objects.requireNonNull(clock, "clock cannot be null");
 
         if (this.status != UserStatus.ACTIVATED) {
-            throw new IllegalStateException("Account is not activated");
+            throw new UserNotActivatedException("Account is not activated");
         }
 
         Instant now = Instant.now(clock);
         this.lastLoginAt = now;
-        this.updatedAt = now;
+        this.markUpdated(now);
     }
 
     public void updatePassword(HashedPassword newHashedPassword, Clock clock) {
         Objects.requireNonNull(newHashedPassword, "newHashedPassword cannot be null");
         Objects.requireNonNull(clock, "clock cannot be null");
 
+        Instant now = Instant.now(clock);
         this.hashedPassword = newHashedPassword;
-        this.updatedAt = Instant.now(clock);
+        this.markUpdated(now);
     }
 
     public void activate(Clock clock) {
         Objects.requireNonNull(clock, "clock cannot be null");
 
+        if (this.status != UserStatus.PENDING_ACTIVATION) {
+            throw new UserNotPendingActivationException(
+                    "Cannot complete first login: user is not pending activation"
+            );
+        }
+
+        if (this.lastLoginAt != null) {
+            throw new UserAlreadyActivatedException(
+                    "First login already completed"
+            );
+        }
+
+        Instant now = Instant.now(clock);
         this.status = UserStatus.ACTIVATED;
-        this.updatedAt = Instant.now();
+        this.lastLoginAt = now;
+        this.markUpdated(now);
     }
 
-    public void deactivate(Clock clock) {
+    public void suspend(Clock clock) {
         Objects.requireNonNull(clock, "clock cannot be null");
 
+        Instant now = Instant.now(clock);
         this.status = UserStatus.SUSPENDED;
-        this.updatedAt = Instant.now();
+        this.markUpdated(now);
     }
 }
