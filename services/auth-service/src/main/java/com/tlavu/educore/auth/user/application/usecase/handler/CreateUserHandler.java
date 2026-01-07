@@ -13,8 +13,8 @@ import com.tlavu.educore.auth.user.domain.valueobject.HashedPassword;
 import com.tlavu.educore.auth.user.domain.event.ActivationTokenCreatedEvent;
 import com.tlavu.educore.auth.shared.domain.event.DomainEventPublisher;
 import com.tlavu.educore.auth.user.domain.valueobject.UserId;
+import com.tlavu.educore.auth.authentication.domain.port.PasswordHasher;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
@@ -27,7 +27,7 @@ public class CreateUserHandler {
 
     private final UserRepository userRepository;
     private final ActivationTokenRepository activationTokenRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final AuthContext authContext;
     private final DomainEventPublisher eventPublisher;
     private final Clock clock;
@@ -36,7 +36,7 @@ public class CreateUserHandler {
     public User handle(CreateUserCommand command) {
         HashedPassword hashedPassword = HashedPassword.fromRaw(
                 command.rawPassword(),
-                passwordEncoder::encode
+                passwordHasher::hash
         );
 
         UUID createdById = authContext.getCurrentUserId().orElse(null);

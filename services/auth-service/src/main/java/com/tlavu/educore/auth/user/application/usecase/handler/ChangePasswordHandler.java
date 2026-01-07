@@ -8,9 +8,9 @@ import com.tlavu.educore.auth.user.domain.exception.SamePasswordException;
 import com.tlavu.educore.auth.user.domain.exception.UserNotFoundException;
 import com.tlavu.educore.auth.user.domain.repository.UserRepository;
 import com.tlavu.educore.auth.user.domain.valueobject.HashedPassword;
+import com.tlavu.educore.auth.authentication.domain.port.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +22,7 @@ public class ChangePasswordHandler {
 
     private final UserRepository userRepository;
     private final AuthContext authContext;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final Clock clock;
 
     @Transactional
@@ -41,19 +41,19 @@ public class ChangePasswordHandler {
             .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         // Verify old password
-        if (!passwordEncoder.matches(command.oldPassword(), user.getHashedPassword().hashedValue())) {
+        if (!passwordHasher.matches(command.oldPassword(), user.getHashedPassword().hashedValue())) {
             throw new InvalidOldPasswordException("Old password does not match");
         }
 
         // Check new password is different from old password
-        if (passwordEncoder.matches(command.newPassword(), user.getHashedPassword().hashedValue())){
+        if (passwordHasher.matches(command.newPassword(), user.getHashedPassword().hashedValue())){
             throw new SamePasswordException("New password must be different from old password");
         }
 
         // Hash new password
         HashedPassword newHashedPassword = HashedPassword.fromRaw(
                 command.newPassword(),
-                passwordEncoder::encode
+                passwordHasher::hash
         );
 
         // Update password
