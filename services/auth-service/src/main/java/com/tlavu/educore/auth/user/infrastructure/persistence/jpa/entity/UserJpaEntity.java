@@ -3,16 +3,17 @@ package com.tlavu.educore.auth.user.infrastructure.persistence.jpa.entity;
 import com.tlavu.educore.auth.user.domain.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users", indexes = {
-        @Index(name = "idx_email", columnList = "email")
-})
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_email", columnList = "email")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,10 +22,10 @@ import java.util.UUID;
 public class UserJpaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column(unique = true, nullable = false, length = 100)
+    @Column(nullable = false, unique = true, length = 150)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
@@ -37,21 +38,15 @@ public class UserJpaEntity {
     @Column(nullable = false, length = 20)
     private UserStatus status;
 
-    @Column(name = "first_login", nullable = false)
-    private boolean firstLogin = true;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt;
+    private Instant lastLoginAt;
 
-    @Column(name = "created_by", length = 50)
-    private String createdBy;
+    @Column(name = "created_by_id")
+    private UUID createdById;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 }
-
