@@ -5,11 +5,13 @@ import com.tlavu.educore.auth.user.domain.entity.User;
 import com.tlavu.educore.auth.user.domain.exception.UserNotFoundException;
 import com.tlavu.educore.auth.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 
 @RequiredArgsConstructor
+@Service
 public class FirstLoginHandler {
 
     private final UserRepository userRepository;
@@ -20,6 +22,6 @@ public class FirstLoginHandler {
         User user = userRepository.findById(command.userId())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        user.completeFirstLogin(clock);
+        user.activate(clock);
     }
 }

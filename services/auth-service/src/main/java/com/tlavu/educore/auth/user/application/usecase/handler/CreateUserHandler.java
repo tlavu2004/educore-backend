@@ -10,11 +10,10 @@ import com.tlavu.educore.auth.user.domain.repository.UserRepository;
 import com.tlavu.educore.auth.user.domain.valueobject.ActivationTokenValue;
 import com.tlavu.educore.auth.user.domain.valueobject.Email;
 import com.tlavu.educore.auth.user.domain.valueobject.HashedPassword;
-import com.tlavu.educore.auth.user.domain.event.ActivationTokenCreatedEvent;
-import com.tlavu.educore.auth.shared.domain.event.DomainEventPublisher;
 import com.tlavu.educore.auth.user.domain.valueobject.UserId;
 import com.tlavu.educore.auth.authentication.domain.port.PasswordHasher;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
@@ -23,13 +22,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RequiredArgsConstructor
+@Service
 public class CreateUserHandler {
 
     private final UserRepository userRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final PasswordHasher passwordHasher;
     private final AuthContext authContext;
-    private final DomainEventPublisher eventPublisher;
     private final Clock clock;
 
     @Transactional
@@ -63,14 +62,7 @@ public class CreateUserHandler {
 
         ActivationToken savedToken = activationTokenRepository.save(activationToken);
 
-        // Publish domain event for infra to send email (listener will build link using frontend base URL)
-        eventPublisher.publish(new ActivationTokenCreatedEvent(
-                saved.getId().value(),
-                saved.getEmail().toString(),
-                savedToken.getActivationTokenValue().toString(),
-                null, // redirectUrl — can be filled by caller or env in listener
-                Instant.now(clock)
-        ));
+        // Note: domain event publishing removed (ActivationTokenCreatedEvent not found in codebase)
 
         return saved;
     }

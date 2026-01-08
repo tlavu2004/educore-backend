@@ -7,9 +7,11 @@ import com.tlavu.educore.auth.user.domain.exception.UserNotFoundException;
 import com.tlavu.educore.auth.user.domain.repository.UserRepository;
 import com.tlavu.educore.auth.user.application.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
+@Service
 public class GetUserProfileHandler {
 
     private final UserRepository userRepository;

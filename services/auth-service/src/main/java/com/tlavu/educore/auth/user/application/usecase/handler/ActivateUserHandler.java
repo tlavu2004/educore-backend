@@ -9,12 +9,14 @@ import com.tlavu.educore.auth.user.domain.repository.ActivationTokenRepository;
 import com.tlavu.educore.auth.user.domain.repository.UserRepository;
 import com.tlavu.educore.auth.user.domain.valueobject.ActivationTokenValue;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
 
 @RequiredArgsConstructor
+@Service
 public class ActivateUserHandler {
 
     private final UserRepository userRepository;
@@ -29,7 +31,7 @@ public class ActivateUserHandler {
 
         activationToken.markAsUsed(Instant.now());
 
-        User user = userRepository.findById(activationToken.getUserId())
+        User user = userRepository.findById(activationToken.getUserId().value())
             .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         user.activate(clock);

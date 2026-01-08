@@ -18,6 +18,7 @@ import java.time.Clock;
 import java.util.UUID;
 
 @RequiredArgsConstructor
+@Service
 public class ChangePasswordHandler {
 
     private final UserRepository userRepository;

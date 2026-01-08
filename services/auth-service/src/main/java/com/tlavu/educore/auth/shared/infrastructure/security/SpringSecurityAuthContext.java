@@ -3,10 +3,12 @@ package com.tlavu.educore.auth.shared.infrastructure.security;
 import com.tlavu.educore.auth.shared.application.security.AuthContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@Component
 public class SpringSecurityAuthContext implements AuthContext {
 
     @Override
