@@ -12,10 +12,12 @@ import com.tlavu.educore.auth.user.domain.valueobject.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 
 @RequiredArgsConstructor
+@Service
 public class LoginHandler {
 
     private final UserRepository userRepository;

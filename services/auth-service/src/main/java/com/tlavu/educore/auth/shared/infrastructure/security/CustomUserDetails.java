@@ -46,9 +46,9 @@ public class CustomUserDetails implements UserDetails {
 
     public static CustomUserDetails fromUser(User user) {
         return new CustomUserDetails(
-                user.getId(),
-                user.getEmail().toString(),
-                user.getHashedPassword().toString(),
+                user.getId().value(),
+                user.getEmail().value(),
+                user.getHashedPassword().hashedValue(),
                 mapRolesToAuthorities(user.getRole()),
                 true,
                 user.getStatus() != UserStatus.SUSPENDED,

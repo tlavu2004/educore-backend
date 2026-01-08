@@ -11,8 +11,10 @@ import com.tlavu.educore.auth.user.domain.exception.UserNotFoundException;
 import com.tlavu.educore.auth.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
+@Service
 public class RefreshTokenHandler {
 
     private final UserRepository userRepository;

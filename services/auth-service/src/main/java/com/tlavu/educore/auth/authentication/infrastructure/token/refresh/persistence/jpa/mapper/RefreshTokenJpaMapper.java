@@ -8,6 +8,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,9 +23,21 @@ public interface RefreshTokenJpaMapper {
     @Mapping(source = "revokedAt", target = "revokedAt")
     RefreshTokenJpaEntity toEntity(RefreshToken token);
 
-    @Mapping(source = "token", target = "refreshTokenValue", qualifiedByName = "stringToRefreshTokenValue")
-    @Mapping(source = "userId", target = "userId", qualifiedByName = "uuidToUserId")
-    RefreshToken toDomain(RefreshTokenJpaEntity entity);
+    default RefreshToken toDomain(RefreshTokenJpaEntity entity) {
+        if (entity == null) return null;
+        RefreshTokenValue value = entity.getToken() == null ? null : RefreshTokenValue.of(entity.getToken());
+        UserId userId = entity.getUserId() == null ? null : UserId.of(entity.getUserId());
+        Instant revokedAt = entity.getRevokedAt();
+        return RefreshToken.reconstruct(
+                entity.getId(),
+                value,
+                userId,
+                entity.getExpiresAt(),
+                revokedAt,
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
+    }
 
     default Optional<RefreshToken> toDomain(Optional<RefreshTokenJpaEntity> e) {
         return e.map(this::toDomain);
