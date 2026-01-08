@@ -5,6 +5,7 @@ import com.tlavu.educore.auth.user.application.usecase.query.GetUserProfileQuery
 import com.tlavu.educore.auth.user.domain.entity.User;
 import com.tlavu.educore.auth.user.domain.exception.UserNotFoundException;
 import com.tlavu.educore.auth.user.domain.repository.UserRepository;
+import com.tlavu.educore.auth.user.application.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetUserProfileHandler {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Transactional(readOnly = true)
     public UserProfileResponse handle(GetUserProfileQuery query) {
@@ -20,6 +22,6 @@ public class GetUserProfileHandler {
                         "User not found with ID: " + query.userId()
                 ));
 
-        return UserProfileResponse.fromEntity(user);
+        return userMapper.toProfileResponse(user);
     }
 }
