@@ -1,7 +1,7 @@
 package com.tlavu.educore.auth.user.application.mapper;
 
-import com.tlavu.educore.auth.user.application.dto.response.UserProfileResponse;
-import com.tlavu.educore.auth.user.application.dto.response.UserResponse;
+import com.tlavu.educore.auth.user.presentation.dto.response.UserProfileResponse;
+import com.tlavu.educore.auth.user.presentation.dto.response.UserResponse;
 import com.tlavu.educore.auth.user.domain.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

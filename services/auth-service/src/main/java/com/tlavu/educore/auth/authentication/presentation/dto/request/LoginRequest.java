@@ -1,4 +1,4 @@
-package com.tlavu.educore.auth.authentication.application.dto.request;
+package com.tlavu.educore.auth.authentication.presentation.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

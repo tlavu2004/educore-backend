@@ -2,7 +2,7 @@ package com.tlavu.educore.auth.authentication.application.usecase.handler;
 
 import com.tlavu.educore.auth.authentication.application.service.interfaces.AccessTokenService;
 import com.tlavu.educore.auth.authentication.application.usecase.query.GetAuthenticatedUserQuery;
-import com.tlavu.educore.auth.user.application.dto.response.UserResponse;
+import com.tlavu.educore.auth.user.presentation.dto.response.UserResponse;
 import com.tlavu.educore.auth.user.application.mapper.UserMapper;
 import com.tlavu.educore.auth.user.domain.entity.User;
 import com.tlavu.educore.auth.user.domain.exception.UserNotFoundException;

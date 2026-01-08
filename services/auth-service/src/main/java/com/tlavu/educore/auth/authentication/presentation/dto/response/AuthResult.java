@@ -1,6 +1,5 @@
-package com.tlavu.educore.auth.authentication.application.dto.response;
+package com.tlavu.educore.auth.authentication.presentation.dto.response;
 
-import com.tlavu.educore.auth.user.application.dto.response.UserResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

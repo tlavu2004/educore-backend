@@ -1,4 +1,4 @@
-package com.tlavu.educore.auth.authentication.application.dto.response;
+package com.tlavu.educore.auth.authentication.presentation.dto.response;
 
 public record JwtResponse(
         String accessToken,

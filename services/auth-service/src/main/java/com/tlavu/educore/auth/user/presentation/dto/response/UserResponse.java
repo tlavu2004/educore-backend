@@ -1,4 +1,4 @@
-package com.tlavu.educore.auth.user.application.dto.response;
+package com.tlavu.educore.auth.user.presentation.dto.response;
 
 import java.time.Instant;
 import java.util.UUID;

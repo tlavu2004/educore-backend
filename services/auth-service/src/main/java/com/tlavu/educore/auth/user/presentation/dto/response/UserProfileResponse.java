@@ -1,4 +1,4 @@
-package com.tlavu.educore.auth.user.application.dto.response;
+package com.tlavu.educore.auth.user.presentation.dto.response;
 
 import com.tlavu.educore.auth.user.domain.entity.User;
 import com.tlavu.educore.auth.user.domain.enums.UserRole;

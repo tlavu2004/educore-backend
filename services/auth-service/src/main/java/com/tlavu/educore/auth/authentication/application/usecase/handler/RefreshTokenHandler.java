@@ -1,6 +1,6 @@
 package com.tlavu.educore.auth.authentication.application.usecase.handler;
 
-import com.tlavu.educore.auth.authentication.application.dto.response.AuthResult;
+import com.tlavu.educore.auth.authentication.presentation.dto.response.AuthResult;
 import com.tlavu.educore.auth.authentication.application.service.interfaces.AccessTokenService;
 import com.tlavu.educore.auth.authentication.application.service.interfaces.RefreshTokenService;
 import com.tlavu.educore.auth.authentication.application.usecase.command.RefreshTokenCommand;

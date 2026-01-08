@@ -1,6 +1,6 @@
 package com.tlavu.educore.auth.user.application.usecase.handler;
 
-import com.tlavu.educore.auth.user.application.dto.response.UserProfileResponse;
+import com.tlavu.educore.auth.user.presentation.dto.response.UserProfileResponse;
 import com.tlavu.educore.auth.user.application.usecase.query.GetUserProfileQuery;
 import com.tlavu.educore.auth.user.domain.entity.User;
 import com.tlavu.educore.auth.user.domain.exception.UserNotFoundException;

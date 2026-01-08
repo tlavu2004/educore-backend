@@ -1,4 +1,4 @@
-package com.tlavu.educore.auth.user.application.dto.request;
+package com.tlavu.educore.auth.user.presentation.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
