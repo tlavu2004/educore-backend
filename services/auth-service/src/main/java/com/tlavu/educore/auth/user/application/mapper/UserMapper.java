@@ -3,12 +3,14 @@ package com.tlavu.educore.auth.user.application.mapper;
 import com.tlavu.educore.auth.user.presentation.dto.response.UserProfileResponse;
 import com.tlavu.educore.auth.user.presentation.dto.response.UserResponse;
 import com.tlavu.educore.auth.user.domain.entity.User;
+import com.tlavu.educore.auth.user.domain.valueobject.UserId;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
+import java.util.UUID;
 
 @Mapper(
         componentModel = "spring",
@@ -28,4 +30,9 @@ public interface UserMapper {
     UserProfileResponse toProfileResponse(User user);
 
     List<UserProfileResponse> toProfileResponseList(List<User> users);
+
+    // Helper for MapStruct: convert UserId -> UUID
+    default UUID map(UserId id) {
+        return id == null ? null : id.value();
+    }
 }
