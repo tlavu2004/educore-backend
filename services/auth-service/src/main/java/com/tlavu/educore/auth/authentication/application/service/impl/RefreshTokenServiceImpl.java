@@ -7,6 +7,7 @@ import com.tlavu.educore.auth.authentication.domain.repository.RefreshTokenRepos
 import com.tlavu.educore.auth.authentication.domain.valueobject.RefreshTokenValue;
 import com.tlavu.educore.auth.user.domain.valueobject.UserId;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
+@Service
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private static final Duration REFRESH_TOKEN_TTL = Duration.ofDays(30);
@@ -44,8 +46,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenValue)
                 .orElseThrow(() -> new InvalidRefreshTokenException("Refresh token not found"));
 
-        Instant now = Instant.now(clock);
-        refreshToken.revoke(now);
+        // mark current token revoked
+        refreshToken.revoke(Instant.now(clock));
 
         RefreshToken newRefreshToken = RefreshToken.createNew(
                 RefreshTokenValue.generate(),
@@ -70,4 +72,3 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         refreshTokenRepository.deleteByUserId(userId);
     }
 }
-

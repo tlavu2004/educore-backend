@@ -1,25 +1,19 @@
 package com.tlavu.educore.auth.authentication.infrastructure.security;
 
-import com.tlavu.educore.auth.authentication.domain.port.PasswordHasher;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
-@Component
-public class SpringSecurityPasswordHasher implements PasswordHasher {
+/**
+ * Exposes a PasswordEncoder bean using BCrypt for hashing passwords.
+ */
+@Configuration
+public class SpringSecurityPasswordHasher {
 
-    private final PasswordEncoder passwordEncoder;
-
-    public SpringSecurityPasswordHasher(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Override
-    public String hash(String rawPassword) {
-        return passwordEncoder.encode(rawPassword);
-    }
-
-    @Override
-    public boolean matches(String rawPassword, String hashedPassword) {
-        return passwordEncoder.matches(rawPassword, hashedPassword);
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
+
